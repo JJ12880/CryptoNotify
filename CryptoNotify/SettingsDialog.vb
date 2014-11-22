@@ -171,4 +171,5 @@ Public Class SettingsDialog
         LoadConfigSettings()
 
     End Sub
+
 End Class

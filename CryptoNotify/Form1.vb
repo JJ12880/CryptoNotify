@@ -96,7 +96,6 @@ Public Class Form1
     Private Sub BTNSettings_Click(sender As Object, e As EventArgs) Handles BTNSettings.Click
         InfoError = False
 
-        '  ListBox1.Items.Clear()
 
 
         If SettingsDialog.ShowDialog = Windows.Forms.DialogResult.Cancel Then
@@ -153,7 +152,22 @@ Public Class Form1
         client.Headers.Add("apisign", sign)
 
 
-      
+        'Dim issingle As Boolean
+        'Dim person As Object
+        'Dim currentlocation As Object
+
+
+
+        'Do While IsSingle = True
+        '    For Each Female As Person In CurrentLocation
+        '        If Female.age < 21 And Female > 29 Then Continue For
+        '        If Female.single = False Then Continue For
+        '        If Female.HotScore < 6 Then Continue For
+        '        If Female.crazy = True And Female.hotscore < 9 Then Continue For
+
+        '        TapThatShit(Female)
+        '    Next
+        'Loop
 
 
 
@@ -370,8 +384,8 @@ Public Class Form1
 
 
 
-        If My.Settings.SendEmail = True Then sendnotification(My.Settings.Email, "CryptoNotify Message", message)
-        If My.Settings.SendSMS Then sendnotification(My.Settings.CellAddress, "CryptoNotify Message", message)
+        'If My.Settings.SendEmail = True Then sendnotification(My.Settings.Email, "CryptoNotify Message", message)
+        'If My.Settings.SendSMS Then sendnotification(My.Settings.CellAddress, "CryptoNotify Message", message)
         If My.Settings.SendSystemTray Then SendIconTrayNotificaiton("CryptoNotify Message", message)
         If My.Settings.SendSound Then My.Computer.Audio.Play(My.Resources.sound1, AudioPlayMode.Background)
         If My.Settings.SendPopup Then ShowMessageBox("CryptoNotify Message", message)
@@ -409,8 +423,8 @@ Public Class Form1
     Private Sub BWEmail(sender As Object, e As System.ComponentModel.DoWorkEventArgs) Handles BackgroundEmail.DoWork
         Dim SmtpServer As New SmtpClient
         Dim mail As New MailMessage
-        'NOTE the password for the CryptoNotify@gmail.com account was removed from the source, but is present in the binary file. 
-        SmtpServer.Credentials = New Net.NetworkCredential("Cryptonotify", "")
+        ' inactive in current version 
+        SmtpServer.Credentials = New Net.NetworkCredential("CryptoNotify", "x")
         SmtpServer.Port = 587
         SmtpServer.Host = "smtp.gmail.com"
         SmtpServer.EnableSsl = True
@@ -424,8 +438,8 @@ Public Class Form1
 
 
 
-        If My.Settings.SendEmail = True Then sendnotification(My.Settings.Email, "CryptoNotify Test Message", message)
-        If My.Settings.SendSMS Then sendnotification(My.Settings.CellAddress, "CryptoNotify Test Message", message)
+        'If My.Settings.SendEmail = True Then sendnotification(My.Settings.Email, "CryptoNotify Test Message", message)
+        'If My.Settings.SendSMS Then sendnotification(My.Settings.CellAddress, "CryptoNotify Test Message", message)
         If My.Settings.SendSystemTray Then SendIconTrayNotificaiton("CryptoNotify Test Message", message)
         If My.Settings.SendSound Then My.Computer.Audio.Play(My.Resources.sound1, AudioPlayMode.Background)
         If My.Settings.SendPopup Then ShowMessageBox("CryptoNotify Test Message", message)

@@ -83,6 +83,7 @@ Partial Class SettingsDialog
         '
         'TBEmailAddress
         '
+        Me.TBEmailAddress.Enabled = False
         Me.TBEmailAddress.Font = New System.Drawing.Font("Microsoft Sans Serif", 12.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.TBEmailAddress.Location = New System.Drawing.Point(136, 74)
         Me.TBEmailAddress.Name = "TBEmailAddress"
@@ -173,6 +174,7 @@ Partial Class SettingsDialog
         'CBMobile
         '
         Me.CBMobile.AutoSize = True
+        Me.CBMobile.Enabled = False
         Me.CBMobile.Location = New System.Drawing.Point(3, 39)
         Me.CBMobile.Name = "CBMobile"
         Me.CBMobile.Size = New System.Drawing.Size(74, 24)
@@ -183,6 +185,7 @@ Partial Class SettingsDialog
         'CBEmail
         '
         Me.CBEmail.AutoSize = True
+        Me.CBEmail.Enabled = False
         Me.CBEmail.Location = New System.Drawing.Point(3, 16)
         Me.CBEmail.Name = "CBEmail"
         Me.CBEmail.Size = New System.Drawing.Size(71, 24)
@@ -202,6 +205,7 @@ Partial Class SettingsDialog
         '
         'TBCellNumber
         '
+        Me.TBCellNumber.Enabled = False
         Me.TBCellNumber.Font = New System.Drawing.Font("Microsoft Sans Serif", 12.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.TBCellNumber.Location = New System.Drawing.Point(136, 106)
         Me.TBCellNumber.Name = "TBCellNumber"

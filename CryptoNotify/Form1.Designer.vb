@@ -117,7 +117,7 @@ Partial Class Form1
         '
         'RSSTimer
         '
-        Me.RSSTimer.Interval = 700
+        Me.RSSTimer.Interval = 150
         '
         'TextBox1
         '
@@ -180,7 +180,7 @@ Partial Class Form1
         Me.Controls.Add(Me.BTNStart)
         Me.Name = "Form1"
         Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen
-        Me.Text = "CryptoNotify Beta 1.1"
+        Me.Text = "CryptoNotify v0.9-beta.2.1"
         Me.ResumeLayout(False)
         Me.PerformLayout()
 
