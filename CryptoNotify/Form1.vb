@@ -1,0 +1,637 @@
+﻿
+
+
+Imports System.Configuration
+Imports System
+Imports System.Collections.Generic
+Imports System.IO
+Imports System.Linq
+Imports System.Net
+Imports System.Security.Cryptography
+Imports System.Text
+Imports System.Threading
+Imports Newtonsoft.Json
+Imports Newtonsoft.Json.Linq
+Imports System.Net.Mail
+Imports System.Windows.Forms
+Imports System.Collections.Specialized
+Imports System.Security.Principal
+Imports System.Xml
+
+
+Structure order
+    Dim market As String
+    Dim type As String
+    Dim quantity As Double
+    Dim filled As Double
+    Dim remaining As Double
+    Dim ID As String
+    Dim price As Double
+End Structure
+
+Structure RSSMessage
+    Dim subject As String
+    Dim message As String
+    Dim link As String
+End Structure
+
+Public Class Form1
+    Inherits System.Windows.Forms.Form
+    Dim orders As New Dictionary(Of String, order)
+    Dim firstrun As Boolean = True
+    Dim InfoError As Boolean = False
+    Dim notif As New NotifyIcon
+
+
+    Private Sub start() Handles Me.Load
+
+        Dim FByte() As Byte = My.Resources.Newtonsoft_Json
+        
+        My.Computer.FileSystem.WriteAllBytes(Directory.GetCurrentDirectory & "/Newtonsoft.Json.dll", FByte, False)
+
+
+
+        Reflection.Assembly.Load(My.Resources.Newtonsoft_Json)
+
+        SetIcons()
+
+        Me.TextBox1.SelectionStart() = 0
+        Me.TextBox1.SelectionLength = Me.TextBox1.Text.Length
+        Me.TextBox1.ScrollToCaret()
+        My.Settings.SendEmail = False
+        My.Settings.SendSMS = False
+
+
+        ShowLargeMessageBox("", "Welcome to CryptoNotify Beta, and may your trades be ever in your favor!" & Environment.NewLine & Environment.NewLine & _
+                        "  + Click 'Settings' to add API Keys and configure notifications" & Environment.NewLine & _
+                        "  + Click 'Send Test' to send a test message" & Environment.NewLine & _
+                        "  + Click 'Start' to start listening for completed trades " & Environment.NewLine & Environment.NewLine & _
+                        "PLEASE Donate! I am a full time nursing student could really use the support." & Environment.NewLine & Environment.NewLine & _
+                        "NOTE: This program only understands completed orders, and cannot generate an " & Environment.NewLine & _
+                       "alert for partially filled orders. This will be corrected in the next version." & Environment.NewLine & Environment.NewLine & _
+                       "Best Wishes and Peace to all! " & Environment.NewLine & " -JJ12880")
+       
+        SendIconTrayNotificaiton("CryptoNotify", "Click settings to get started!")
+      
+        RSSTimer.Start()
+
+    End Sub
+    Private Sub BTNStart_Click(sender As Object, e As EventArgs) Handles BTNStart.Click
+        If BTNStart.Text = "Stop" Then
+            GetDataTimer.Stop()
+            BTNStart.Text = "Start"
+            LBLStatus.Text = "Not Connected"
+            LBLStatusColor.BackColor = Color.Red
+            firstrun = True
+            Exit Sub
+        End If
+
+        If BTNStart.Text = "Start" Then
+            BTNStart.Text = "Stop"
+            GetData(Nothing, Nothing)
+            Exit Sub
+        End If
+
+    End Sub
+    Private Sub BTNSettings_Click(sender As Object, e As EventArgs) Handles BTNSettings.Click
+        InfoError = False
+
+        '  ListBox1.Items.Clear()
+
+
+        If SettingsDialog.ShowDialog = Windows.Forms.DialogResult.Cancel Then
+            InfoError = True
+            Exit Sub
+
+        End If
+        BTNStart.Show()
+        BTNTest.Show()
+        BTNSystemTray.Show()
+
+
+
+
+
+    End Sub
+    Private Sub GetData(sender As Object, e As EventArgs)
+
+
+
+        LBLStatusColor.BackColor = Color.Yellow
+        LBLStatus.Text = "Loading Trade Data"
+        LBLStatus.Update()
+        LBLStatusColor.Update()
+
+        If firstrun = True Then
+            SendIconTrayNotificaiton("CryptoNotify", "Loading Data")
+
+        End If
+
+
+
+
+        Dim method As String = "getorderhistory"
+
+        Dim URI As String = "https://bittrex.com/api/v1.1/account/" & method & "?apikey=" & My.Settings.Pubkey & "&nonce=" & Environment.TickCount
+
+
+        Dim request = WebRequest.Create("https://bittrex.com/api/v1.1/")
+        ' Dim postdata As String = "https://bittrex.com/api/v1.1/market/getopenorders?apikey=5ce18489a4034e0b9eb1e584ad4b0d95&market=BTC-LTC&nonce=1201"
+
+
+        '  Dim postData = [String].Format("method?={0}&nonce={1}", method, Environment.TickCount)
+
+
+
+        Dim hmAcSha = New HMACSHA512(Encoding.ASCII.GetBytes(My.Settings.Prikey))
+        Dim URIbyte = Encoding.ASCII.GetBytes(URI)
+        Dim hashmessage = hmAcSha.ComputeHash(URIbyte)
+        Dim sign = BitConverter.ToString(hashmessage)
+        sign = sign.Replace("-", "")
+
+        Dim client As New WebClient()
+        client.Headers.Add("apisign", sign)
+
+
+        'Dim issingle As Boolean
+        'Dim person As Object
+        'Dim currentlocation As Object
+
+
+
+        'Do While IsSingle = True
+        '    For Each Female As Person In CurrentLocation
+        '        If Female.age < 21 And Female > 29 Then Continue For
+        '        If Female.single = False Then Continue For
+        '        If Female.HotScore < 6 Then Continue For
+        '        If Female.crazy = True And Female.hotscore < 9 Then Continue For
+
+        '        TapThatShit(Female)
+        '    Next
+        'Loop
+
+
+
+        Dim test As JObject
+
+
+        Try
+            test = JObject.Parse(client.DownloadString(URI))
+        Catch ex As Exception
+            SendIconTrayNotificaiton("CryptoNotify", "Connection to Bittrex Timed out! :-(")
+            LBLStatus.Text = "Network Error, no connection to Bittrex!"
+            LBLStatusColor.BackColor = Color.Red
+            firstrun = True
+            GetDataTimer.Start()
+            Exit Sub
+        End Try
+
+        Dim str As String = test("success")
+
+        If test("success") = "False" Then
+            SendIconTrayNotificaiton("ERROR", "CANNOT Connect to Bittrex! API Keys are wrong or non-functional")
+            LBLStatusColor.BackColor = Color.Yellow
+            LBLStatus.Text = "Connected, But API Keys are BAD!"
+            firstrun = True
+            GetDataTimer.Start()
+            Exit Sub
+        Else
+            LBLStatusColor.BackColor = Color.Green
+            LBLStatus.Text = "Connected! API Keys good!"
+        End If
+
+
+
+        If test("success") = "True" And firstrun = True Then
+
+            SendIconTrayNotificaiton("Connected!", "API Keys good, Listening for completed orders!")
+        End If
+
+
+
+
+        For Each x As JObject In test("result")
+            Dim neworder As order
+
+            neworder.market = x("Exchange")
+            neworder.type = x("OrderType")
+            neworder.quantity = x("Quantity")
+            neworder.price = Format(x("Limit"), "0.#########")
+            neworder.filled = CDbl(x("Quantity")) - CDbl(x("QuantityRemaining"))
+            neworder.remaining = x("QuantityRemaining")
+            neworder.ID = x("OrderUuid")
+
+            If orders.ContainsKey(neworder.ID) Then
+                If orders(neworder.ID).filled <> neworder.filled Then
+                    'updatelistview()
+                    SendAlert(neworder)
+
+                End If
+            Else
+                orders.Add(neworder.ID, neworder)
+
+                If firstrun = False Then
+                    ' updatelistview()
+                    SendAlert(neworder)
+                End If
+
+            End If
+        Next
+
+        If firstrun Then
+            SendIconTrayNotificaiton("CryptoNotify", "Waiting for completed Trades")
+            LBLStatusColor.BackColor = Color.Green
+            LBLStatus.Text = "Connected! API Keys good!"
+        End If
+
+
+
+
+
+
+
+        firstrun = False
+        GetDataTimer.Start()
+
+    End Sub
+
+
+#Region "RSS"
+    Dim RSSURL As String = "http://www.repeatserver.com/Users/JJ12880/news.xml"
+    Private Sub ReadAllRSS()
+
+        Dim wr As WebRequest = System.Net.WebRequest.Create(RSSURL)
+        Dim resp As WebResponse = wr.GetResponse()
+
+        Dim rssStream As Stream = resp.GetResponseStream()
+        Dim rssDoc As New XmlDocument()
+        rssDoc.Load(rssStream)
+
+        Dim rssItems As XmlNodeList = rssDoc.SelectNodes("rss/channel/item")
+
+        Dim title As String = ""
+        Dim link As String = ""
+        Dim description As String = ""
+        Dim i As Integer
+
+        For i = 0 To rssItems.Count - 1
+            Dim rssDetail As XmlNode
+            'Get the title
+            rssDetail = rssItems.Item(i).SelectSingleNode("title")
+            If rssDetail.Equals(Nothing) = False Then
+                title = rssDetail.InnerText
+            Else
+                title = ""
+            End If
+            'Get the link
+            Try
+                rssDetail = rssItems.Item(i).SelectSingleNode("link")
+                If rssDetail.Equals(Nothing) = False Then
+                    link = rssDetail.InnerText
+                Else
+                    link = ""
+                End If
+            Catch ex As Exception
+
+            End Try
+
+            'Get the description
+            rssDetail = rssItems.Item(i).SelectSingleNode("description")
+            If rssDetail.Equals(Nothing) = False Then
+                description = rssDetail.InnerText
+            Else
+                description = ""
+            End If
+
+            'title
+            'link
+            'description 
+        Next
+    End Sub
+    Private Function ReadLatestRSS()
+        Dim RSSMSG As New RSSMessage
+        Dim wr As WebRequest = System.Net.WebRequest.Create(RSSURL)
+        Dim resp As WebResponse = wr.GetResponse()
+
+        Dim rssStream As Stream = resp.GetResponseStream()
+        Dim rssDoc As New XmlDocument()
+        rssDoc.Load(rssStream)
+
+        Dim rssItems As XmlNodeList = rssDoc.SelectNodes("rss/channel/item")
+
+        Dim title As String = ""
+        Dim link As String = ""
+        Dim description As String = ""
+
+
+
+        Dim rssDetail As XmlNode
+        'Get the title
+        rssDetail = rssItems.Item(0).SelectSingleNode("title")
+        If rssDetail.Equals(Nothing) = False Then
+            RSSMSG.subject = rssDetail.InnerText
+        Else
+            RSSMSG.subject = ""
+        End If
+        'Get the link
+        Try
+            rssDetail = rssItems.Item(0).SelectSingleNode("link")
+            If rssDetail.Equals(Nothing) = False Then
+                RSSMSG.link = rssDetail.InnerText
+            Else
+                RSSMSG.link = ""
+            End If
+        Catch ex As Exception
+            link = " "
+        End Try
+
+        'Get the description
+        rssDetail = rssItems.Item(0).SelectSingleNode("description")
+        If rssDetail.Equals(Nothing) = False Then
+            RSSMSG.message = rssDetail.InnerText
+        Else
+            RSSMSG.message = ""
+        End If
+
+        Return RSSMSG
+
+    End Function
+    Private Sub ShowLatestRSS()
+        Dim msg = ReadLatestRSS()
+        If My.Settings.LatestRSS <> msg.subject Then
+            My.Settings.LatestRSS = msg.subject
+        End If
+
+        ShowLinkLablemMessageBox(msg.subject, msg.message, msg.link)
+    End Sub
+    Private Sub ShowLatestRSSIfNew()
+        Dim msg As RSSMessage = ReadLatestRSS()
+        If My.Settings.LatestRSS <> msg.subject Then
+            My.Settings.LatestRSS = msg.subject
+            ShowLinkLablemMessageBox(msg.subject, msg.message, msg.link)
+        End If
+    End Sub
+
+#End Region
+
+#Region "Notification"
+    Private Sub SendAlert(ByVal neworder As order)
+
+        Dim Subject As String = "Bittrex Order Filled"
+        Dim message As String = neworder.market & " " & neworder.type.Remove(0, 6) & Environment.NewLine & "Price " & Format(neworder.price, "0.#########") & Environment.NewLine & "Quantity " & neworder.quantity & Environment.NewLine & "Time " & TimeOfDay.TimeOfDay.ToString & Environment.NewLine & "Please Remember To Donate!"
+
+        SendIconTrayNotificaiton("CryptoNotify", message)
+
+
+
+
+        If My.Settings.SendEmail = True Then sendnotification(My.Settings.Email, "CryptoNotify Message", message)
+        If My.Settings.SendSMS Then sendnotification(My.Settings.CellAddress, "CryptoNotify Message", message)
+        If My.Settings.SendSystemTray Then SendIconTrayNotificaiton("CryptoNotify Message", message)
+        If My.Settings.SendSound Then My.Computer.Audio.Play(My.Resources.sound1, AudioPlayMode.Background)
+        If My.Settings.SendPopup Then ShowMessageBox("CryptoNotify Message", message)
+
+
+
+
+
+
+
+
+
+
+    End Sub
+    Private Sub sendnotification(ByVal address As String, ByVal subject As String, ByVal message As String)
+
+        Dim mail As New MailMessage()
+
+        mail = New MailMessage()
+        mail.From = New MailAddress("CryptoNotify@gmail.com")
+        mail.To.Add(address)
+
+
+
+
+        mail.Subject = subject
+        mail.Body = message
+        Do While BackgroundEmail.IsBusy = True
+            Application.DoEvents()
+        Loop
+        BackgroundEmail.RunWorkerAsync(mail)
+
+
+    End Sub
+    Private Sub BWEmail(sender As Object, e As System.ComponentModel.DoWorkEventArgs) Handles BackgroundEmail.DoWork
+        Dim SmtpServer As New SmtpClient
+        Dim mail As New MailMessage
+        SmtpServer.Credentials = New Net.NetworkCredential("CryptoNotify", "7crypto3")
+        SmtpServer.Port = 587
+        SmtpServer.Host = "smtp.gmail.com"
+        SmtpServer.EnableSsl = True
+        mail = e.Argument
+        SmtpServer.Send(mail)
+
+    End Sub
+    Private Sub SendTest(sender As Object, e As EventArgs) Handles BTNTest.Click
+
+        Dim message As String = "BTC-TEST Sell" & Environment.NewLine & "Price TEST Price" & Environment.NewLine & "Quantity TEST" & Environment.NewLine & "Time " & TimeOfDay.TimeOfDay.ToString & Environment.NewLine & "Dev by JJ12880" & Environment.NewLine & "Please Remember To Donate!"
+
+
+
+        If My.Settings.SendEmail = True Then sendnotification(My.Settings.Email, "CryptoNotify Test Message", message)
+        If My.Settings.SendSMS Then sendnotification(My.Settings.CellAddress, "CryptoNotify Test Message", message)
+        If My.Settings.SendSystemTray Then SendIconTrayNotificaiton("CryptoNotify Test Message", message)
+        If My.Settings.SendSound Then My.Computer.Audio.Play(My.Resources.sound1, AudioPlayMode.Background)
+        If My.Settings.SendPopup Then ShowMessageBox("CryptoNotify Test Message", message)
+
+
+
+
+
+    End Sub
+
+#End Region
+
+#Region "TrayIcon"
+    Private contextMenu1 As System.Windows.Forms.ContextMenu
+    Friend WithEvents menuItem1 As System.Windows.Forms.MenuItem
+    Friend WithEvents menuItem2 As System.Windows.Forms.MenuItem
+    Public Sub SetIcons()
+        Me.Icon = My.Resources.appicon
+        Me.Update()
+        LargeMessageForm.Icon = My.Resources.appicon
+        LargeMessageForm.Update()
+        MessageForm.Icon = My.Resources.appicon
+        MessageForm.Update()
+        SettingsDialog.Icon = My.Resources.appicon
+        SettingsDialog.Update()
+
+
+
+
+
+
+        Me.components = New System.ComponentModel.Container
+        Me.contextMenu1 = New System.Windows.Forms.ContextMenu
+        Me.menuItem1 = New System.Windows.Forms.MenuItem
+        Me.menuItem2 = New System.Windows.Forms.MenuItem
+
+        ' Initialize contextMenu1 
+        Me.contextMenu1.MenuItems.AddRange(New System.Windows.Forms.MenuItem() {Me.menuItem2, Me.menuItem1})
+
+        ' Initialize menuItem1 
+        Me.menuItem1.Index = 0
+        Me.menuItem1.Text = "E&xit"
+        Me.menuItem2.Index = 1
+        Me.menuItem2.Text = "Restore"
+
+        ' Set up how the form should be displayed. 
+        'Me.ClientSize = New System.Drawing.Size(292, 266)
+        'Me.Text = "Notify Icon Example"
+
+        ' Create the NotifyIcon. 
+        Me.NotifyIcon1 = New System.Windows.Forms.NotifyIcon(Me.components)
+
+        ' The Icon property sets the icon that will appear 
+        ' in the systray for this application.
+
+        Try
+            NotifyIcon1.Icon = My.Resources.appicon
+        Catch ex As Exception
+
+        End Try
+
+
+        ' The ContextMenu property sets the menu that will 
+        ' appear when the systray icon is right clicked.
+        NotifyIcon1.ContextMenu = Me.contextMenu1
+
+        ' The Text property sets the text that will be displayed, 
+        ' in a tooltip, when the mouse hovers over the systray icon.
+        NotifyIcon1.Text = "CryptoNotify"
+        NotifyIcon1.Visible = True
+    End Sub
+    Private Sub Button4_Click(sender As Object, e As EventArgs) Handles BTNSystemTray.Click
+        Me.WindowState = FormWindowState.Minimized
+        NotifyIcon1.ShowBalloonTip(3000, "CryptoNotify Running in System Tray", "Click Icon to Restore CryptoNotify Window", ToolTipIcon.Info)
+
+        Me.Hide()
+    End Sub
+
+    Private Sub notifyIcon1_DoubleClick(Sender As Object, e As EventArgs) Handles NotifyIcon1.DoubleClick
+        ' Show the form when the user double clicks on the notify icon. 
+
+        ' Set the WindowState to normal if the form is minimized.
+        Me.Show()
+        Me.WindowState = FormWindowState.Normal
+
+
+
+        ' Activate the form.
+        Me.Activate()
+    End Sub
+
+    Private Sub menuItem1_Click(Sender As Object, e As EventArgs) Handles menuItem1.Click
+        ' Close the form, which closes the application.
+        Me.Close()
+    End Sub
+    Private Sub menuItem2_Click(Sender As Object, e As EventArgs) Handles menuItem2.Click
+        ' Close the form, which closes the application.
+        Me.Show()
+        Me.WindowState = FormWindowState.Normal
+    End Sub
+
+    Private Sub SendIconTrayNotificaiton(ByVal title, ByVal message)
+        NotifyIcon1.ShowBalloonTip(864000, title, message, ToolTipIcon.Info)
+    End Sub
+
+#End Region
+
+#Region "MessageBoxes"
+    Sub ShowDialogBox(ByVal subject As String, ByVal message As String)
+        Dim msg As New MessageForm
+        msg.StartPosition = FormStartPosition.CenterScreen
+        msg.RTBAlert.Text = message
+        msg.Text = subject
+        msg.ShowDialog()
+    End Sub
+    Sub ShowMessageBox(ByVal subject As String, ByVal message As String)
+        Dim msg As New MessageForm
+        msg.StartPosition = FormStartPosition.CenterScreen
+        msg.RTBAlert.Text = message
+        msg.Text = subject
+        msg.Show()
+    End Sub
+
+    Sub ShowLargeMessageBox(ByVal subject As String, ByVal message As String)
+        Dim msg As New LargeMessageForm
+        msg.StartPosition = FormStartPosition.CenterScreen
+        Dim results As New DialogResult
+        msg.RTBAlert.Text = message
+        msg.Text = subject
+        DialogResult = msg.ShowDialog()
+
+
+    End Sub
+
+
+    Function ShowPrivacyMessageBox(ByVal subject As String, ByVal message As String)
+        Dim msg As New PrivacyWarningForm
+        msg.StartPosition = FormStartPosition.CenterScreen
+        Dim results As New DialogResult
+        msg.RTBAlert.Text = message
+        msg.Text = subject
+        DialogResult = msg.ShowDialog()
+        Return DialogResult
+
+    End Function
+
+    Function ShowConfirmMessageBox(ByVal subject As String, ByVal message As String)
+        Dim msg As New ConfirmForm
+        msg.StartPosition = FormStartPosition.CenterParent
+        Dim results As New DialogResult
+        msg.RTBAlert.Text = message
+        msg.Text = subject
+        DialogResult = msg.ShowDialog()
+        Return DialogResult
+
+    End Function
+    Function ShowLinkLablemMessageBox(ByVal subject As String, ByVal message As String, ByVal link As String)
+        Dim msg As New LinkLableMessageForm
+        msg.StartPosition = FormStartPosition.CenterParent
+        msg.RTBAlert.Text = message
+        msg.Text = subject
+        msg.LinkLabel.Text = link
+        DialogResult = msg.ShowDialog()
+        Return DialogResult
+
+    End Function
+#End Region
+
+#Region "Timers"
+    Private Sub Timer1_Tick(sender As Object, e As EventArgs) Handles GetDataTimer.Tick
+        GetDataTimer.Stop()
+        GetData(Nothing, Nothing)
+    End Sub
+
+    Private Sub Timer2_Tick(sender As Object, e As EventArgs) Handles RSSTimer.Tick
+        RSSTimer.Stop()
+        If RSSTimer.Interval <> 1800000 Then
+            ShowLatestRSS()
+
+            RSSTimer.Interval = 1800000
+            RSSTimer.Start()
+            Exit Sub
+
+        End If
+
+        ShowLatestRSSIfNew()
+        RSSTimer.Start()
+
+    End Sub
+
+#End Region
+
+
+    
+End Class
