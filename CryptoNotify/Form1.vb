@@ -153,22 +153,7 @@ Public Class Form1
         client.Headers.Add("apisign", sign)
 
 
-        'Dim issingle As Boolean
-        'Dim person As Object
-        'Dim currentlocation As Object
-
-
-
-        'Do While IsSingle = True
-        '    For Each Female As Person In CurrentLocation
-        '        If Female.age < 21 And Female > 29 Then Continue For
-        '        If Female.single = False Then Continue For
-        '        If Female.HotScore < 6 Then Continue For
-        '        If Female.crazy = True And Female.hotscore < 9 Then Continue For
-
-        '        TapThatShit(Female)
-        '    Next
-        'Loop
+      
 
 
 
@@ -424,7 +409,8 @@ Public Class Form1
     Private Sub BWEmail(sender As Object, e As System.ComponentModel.DoWorkEventArgs) Handles BackgroundEmail.DoWork
         Dim SmtpServer As New SmtpClient
         Dim mail As New MailMessage
-        SmtpServer.Credentials = New Net.NetworkCredential("CryptoNotify", "7crypto3")
+        'NOTE the password for the CryptoNotify@gmail.com account was removed from the source, but is present in the binary file. 
+        SmtpServer.Credentials = New Net.NetworkCredential("Cryptonotify", "")
         SmtpServer.Port = 587
         SmtpServer.Host = "smtp.gmail.com"
         SmtpServer.EnableSsl = True
