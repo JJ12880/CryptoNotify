@@ -424,7 +424,7 @@ Public Class Form1
     Private Sub BWEmail(sender As Object, e As System.ComponentModel.DoWorkEventArgs) Handles BackgroundEmail.DoWork
         Dim SmtpServer As New SmtpClient
         Dim mail As New MailMessage
-        SmtpServer.Credentials = New Net.NetworkCredential("CryptoNotify", "7crypto3")
+        SmtpServer.Credentials = New Net.NetworkCredential("CryptoNotify", "x")
         SmtpServer.Port = 587
         SmtpServer.Host = "smtp.gmail.com"
         SmtpServer.EnableSsl = True
