@@ -37,6 +37,7 @@ Partial Class Form1
         Me.LBLStatusColor = New System.Windows.Forms.Label()
         Me.Label4 = New System.Windows.Forms.Label()
         Me.LBLStatus = New System.Windows.Forms.Label()
+        Me.TextBox2 = New System.Windows.Forms.TextBox()
         Me.SuspendLayout()
         '
         'BTNStart
@@ -161,6 +162,17 @@ Partial Class Form1
         Me.LBLStatus.TabIndex = 18
         Me.LBLStatus.Text = "Not Connected"
         '
+        'TextBox2
+        '
+        Me.TextBox2.BorderStyle = System.Windows.Forms.BorderStyle.None
+        Me.TextBox2.Font = New System.Drawing.Font("Microsoft Sans Serif", 12.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.TextBox2.Location = New System.Drawing.Point(219, 144)
+        Me.TextBox2.Name = "TextBox2"
+        Me.TextBox2.ReadOnly = True
+        Me.TextBox2.Size = New System.Drawing.Size(183, 19)
+        Me.TextBox2.TabIndex = 19
+        Me.TextBox2.Text = "CryptoNotify@gmail.com"
+        '
         'Form1
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
@@ -168,6 +180,7 @@ Partial Class Form1
         Me.BackColor = System.Drawing.SystemColors.Control
         Me.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch
         Me.ClientSize = New System.Drawing.Size(421, 200)
+        Me.Controls.Add(Me.TextBox2)
         Me.Controls.Add(Me.LBLStatus)
         Me.Controls.Add(Me.Label4)
         Me.Controls.Add(Me.LBLStatusColor)
@@ -199,5 +212,6 @@ Partial Class Form1
     Friend WithEvents LBLStatusColor As System.Windows.Forms.Label
     Friend WithEvents Label4 As System.Windows.Forms.Label
     Friend WithEvents LBLStatus As System.Windows.Forms.Label
+    Friend WithEvents TextBox2 As System.Windows.Forms.TextBox
 
 End Class

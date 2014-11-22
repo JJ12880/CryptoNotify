@@ -65,9 +65,12 @@ to your Email address or cellular number. This information is not exposed to oth
 
 
 ###CONTACT###
+JJ12880
+cryptonotify@gmail.com
+CoinBlab http://coinblab.com/profile/JJ12880
 
-Contact JJ12880 through github or on the CoinBlab forum. 
-http://coinblab.com/profile/JJ12880
+Or send a message through GitHub
+
 
 ###Acknowledgements###
 
