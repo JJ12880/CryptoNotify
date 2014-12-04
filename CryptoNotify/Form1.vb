@@ -37,45 +37,26 @@ End Structure
 
 Public Class Form1
     Inherits System.Windows.Forms.Form
-    Dim orders As New Dictionary(Of String, order)
+    Dim closedorders As New Dictionary(Of String, order)
+    Dim openorders As New Dictionary(Of String, order)
     Dim firstrun As Boolean = True
+    Dim networkerror As Boolean = False
     Dim InfoError As Boolean = False
     Dim notif As New NotifyIcon
 
 
     Private Sub start() Handles Me.Load
 
-        Dim FByte() As Byte = My.Resources.Newtonsoft_Json
-        
-        My.Computer.FileSystem.WriteAllBytes(Directory.GetCurrentDirectory & "/Newtonsoft.Json.dll", FByte, False)
-
-
-
-        Reflection.Assembly.Load(My.Resources.Newtonsoft_Json)
-
+        OutputJsonDll()
         SetIcons()
-
-        Me.TextBox1.SelectionStart() = 0
-        Me.TextBox1.SelectionLength = Me.TextBox1.Text.Length
-        Me.TextBox1.ScrollToCaret()
-        My.Settings.SendEmail = False
-        My.Settings.SendSMS = False
-
-
-        ShowLargeMessageBox("", "Welcome to CryptoNotify Beta, and may your trades be ever in your favor!" & Environment.NewLine & Environment.NewLine & _
-                        "  + Click 'Settings' to add API Keys and configure notifications" & Environment.NewLine & _
-                        "  + Click 'Send Test' to send a test message" & Environment.NewLine & _
-                        "  + Click 'Start' to start listening for completed trades " & Environment.NewLine & Environment.NewLine & _
-                        "PLEASE Donate! I am a full time nursing student could really use the support." & Environment.NewLine & Environment.NewLine & _
-                        "NOTE: This program only understands completed orders, and cannot generate an " & Environment.NewLine & _
-                       "alert for partially filled orders. This will be corrected in the next version." & Environment.NewLine & Environment.NewLine & _
-                       "Best Wishes and Peace to all! " & Environment.NewLine & " -JJ12880")
-       
-        SendIconTrayNotificaiton("CryptoNotify", "Click settings to get started!")
-      
+        SetAddyBoxes()
+        SetLockoutEmailSMS()
+        ShowWelcomeMessage()
         RSSTimer.Start()
 
     End Sub
+
+
     Private Sub BTNStart_Click(sender As Object, e As EventArgs) Handles BTNStart.Click
         If BTNStart.Text = "Stop" Then
             GetDataTimer.Stop()
@@ -112,6 +93,7 @@ Public Class Form1
 
 
     End Sub
+
     Private Sub GetData(sender As Object, e As EventArgs)
 
 
@@ -126,19 +108,29 @@ Public Class Form1
 
         End If
 
+        GetCompleatedOrders()
+
+        GetPartialOrders()
+
+        If firstrun And Not networkerror Then
+            SendIconTrayNotificaiton("CryptoNotify", "Waiting for completed Trades")
+            LBLStatusColor.BackColor = Color.Green
+            LBLStatus.Text = "Connected! API Keys good!"
+        End If
 
 
+        firstrun = False
+        GetDataTimer.Start()
 
+    End Sub
+    Private Sub GetCompleatedOrders()
         Dim method As String = "getorderhistory"
 
         Dim URI As String = "https://bittrex.com/api/v1.1/account/" & method & "?apikey=" & My.Settings.Pubkey & "&nonce=" & Environment.TickCount
 
 
         Dim request = WebRequest.Create("https://bittrex.com/api/v1.1/")
-        ' Dim postdata As String = "https://bittrex.com/api/v1.1/market/getopenorders?apikey=5ce18489a4034e0b9eb1e584ad4b0d95&market=BTC-LTC&nonce=1201"
 
-
-        '  Dim postData = [String].Format("method?={0}&nonce={1}", method, Environment.TickCount)
 
 
 
@@ -152,23 +144,6 @@ Public Class Form1
         client.Headers.Add("apisign", sign)
 
 
-        'Dim issingle As Boolean
-        'Dim person As Object
-        'Dim currentlocation As Object
-
-
-
-        'Do While IsSingle = True
-        '    For Each Female As Person In CurrentLocation
-        '        If Female.age < 21 And Female > 29 Then Continue For
-        '        If Female.single = False Then Continue For
-        '        If Female.HotScore < 6 Then Continue For
-        '        If Female.crazy = True And Female.hotscore < 9 Then Continue For
-
-        '        TapThatShit(Female)
-        '    Next
-        'Loop
-
 
 
         Dim test As JObject
@@ -180,8 +155,9 @@ Public Class Form1
             SendIconTrayNotificaiton("CryptoNotify", "Connection to Bittrex Timed out! :-(")
             LBLStatus.Text = "Network Error, no connection to Bittrex!"
             LBLStatusColor.BackColor = Color.Red
-            firstrun = True
+            networkerror = True
             GetDataTimer.Start()
+
             Exit Sub
         End Try
 
@@ -191,8 +167,9 @@ Public Class Form1
             SendIconTrayNotificaiton("ERROR", "CANNOT Connect to Bittrex! API Keys are wrong or non-functional")
             LBLStatusColor.BackColor = Color.Yellow
             LBLStatus.Text = "Connected, But API Keys are BAD!"
-            firstrun = True
+            networkerror = True
             GetDataTimer.Start()
+
             Exit Sub
         Else
             LBLStatusColor.BackColor = Color.Green
@@ -220,41 +197,131 @@ Public Class Form1
             neworder.remaining = x("QuantityRemaining")
             neworder.ID = x("OrderUuid")
 
-            If orders.ContainsKey(neworder.ID) Then
-                If orders(neworder.ID).filled <> neworder.filled Then
+            If closedorders.ContainsKey(neworder.ID) Then
+                'pretty sure this code is not needed, because orders in this method only show up when the order is complete
+                'there should never be a case where the filled # changes. 
+                If closedorders(neworder.ID).filled <> neworder.filled Then
                     'updatelistview()
-                    SendAlert(neworder)
+                    SendAlert(neworder, "Comp")
 
                 End If
             Else
-                orders.Add(neworder.ID, neworder)
+                closedorders.Add(neworder.ID, neworder)
 
                 If firstrun = False Then
                     ' updatelistview()
-                    SendAlert(neworder)
+                    If neworder.filled <> neworder.quantity Then Continue For
+                    SendAlert(neworder, "Comp")
                 End If
 
             End If
         Next
+    End Sub
+    Private Sub GetPartialOrders()
+        Dim method As String = "getopenorders"
 
-        If firstrun Then
-            SendIconTrayNotificaiton("CryptoNotify", "Waiting for completed Trades")
-            LBLStatusColor.BackColor = Color.Green
-            LBLStatus.Text = "Connected! API Keys good!"
-        End If
-
+        Dim URI As String = "https://bittrex.com/api/v1.1/market/" & method & "?apikey=" & My.Settings.Pubkey & "&nonce=" & Environment.TickCount
 
 
-
+        Dim request = WebRequest.Create("https://bittrex.com/api/v1.1/")
 
 
 
-        firstrun = False
-        GetDataTimer.Start()
 
+        Dim hmAcSha = New HMACSHA512(Encoding.ASCII.GetBytes(My.Settings.Prikey))
+        Dim URIbyte = Encoding.ASCII.GetBytes(URI)
+        Dim hashmessage = hmAcSha.ComputeHash(URIbyte)
+        Dim sign = BitConverter.ToString(hashmessage)
+        sign = sign.Replace("-", "")
+
+        Dim client As New WebClient()
+        client.Headers.Add("apisign", sign)
+
+
+
+
+        Dim test As JObject
+
+
+        Try
+            test = JObject.Parse(client.DownloadString(URI))
+        Catch ex As Exception
+            SendIconTrayNotificaiton("CryptoNotify", "Connection to Bittrex Timed out! :-(")
+            LBLStatus.Text = "Network Error, no connection to Bittrex!"
+            LBLStatusColor.BackColor = Color.Red
+            firstrun = True
+            GetDataTimer.Start()
+            Exit Sub
+        End Try
+
+        Dim str As String = test("success")
+
+
+
+
+        For Each x As JObject In test("result")
+            Dim neworder As order
+
+            neworder.market = x("Exchange")
+            neworder.type = x("OrderType")
+            neworder.quantity = x("Quantity")
+            neworder.price = Format(x("Limit"), "0.#########")
+            neworder.filled = CDbl(x("Quantity")) - CDbl(x("QuantityRemaining"))
+            neworder.remaining = x("QuantityRemaining")
+            neworder.ID = x("OrderUuid")
+
+            If openorders.ContainsKey(neworder.ID) Then
+                'pretty sure this code is not needed, because orders in this method only show up when the order is complete
+                'there should never be a case where the filled # changes. 
+                If openorders(neworder.ID).filled <> neworder.filled Then
+                    'updatelistview()
+                    neworder.type = neworder.type
+                    SendAlert(neworder, "part")
+                    openorders.Remove(neworder.ID)
+                    openorders.Add(neworder.ID, neworder)
+                End If
+            Else
+                neworder.filled = 0
+                openorders.Add(neworder.ID, neworder)
+            End If
+        Next
     End Sub
 
 
+
+#Region "StartupTasks"
+
+    Private Sub ShowWelcomeMessage()
+        ShowLargeMessageBox("", "Welcome to CryptoNotify Beta, and may your trades be ever in your favor!" & Environment.NewLine & Environment.NewLine & _
+                                "  + Click 'Settings' to add API Keys and configure notifications" & Environment.NewLine & _
+                                "  + Click 'Send Test' to send a test message" & Environment.NewLine & _
+                                "  + Click 'Start' to start listening for completed trades " & Environment.NewLine & Environment.NewLine & _
+                                "PLEASE Donate! I am a full time nursing student could really use the support." & Environment.NewLine & Environment.NewLine & _
+                                "Best Wishes and Peace to all! " & Environment.NewLine & " -JJ12880")
+
+        SendIconTrayNotificaiton("CryptoNotify", "Click settings to get started!")
+    End Sub
+    Private Sub SetLockoutEmailSMS()
+        My.Settings.SendEmail = False
+        My.Settings.SendSMS = False
+    End Sub
+    Private Sub SetAddyBoxes()
+        Me.TBBTCADDY.SelectionStart() = 0
+        Me.TBBTCADDY.SelectionLength = Me.TBBTCADDY.Text.Length
+        Me.TBBTCADDY.ScrollToCaret()
+
+        Me.TBBYCADDY.SelectionStart() = 0
+        Me.TBBYCADDY.SelectionLength = Me.TBBTCADDY.Text.Length
+        Me.TBBYCADDY.ScrollToCaret()
+
+    End Sub
+    Private Sub OutputJsonDll()
+
+        Dim FByte() As Byte = My.Resources.Newtonsoft_Json
+        My.Computer.FileSystem.WriteAllBytes(Directory.GetCurrentDirectory & "/Newtonsoft.Json.dll", FByte, False)
+    End Sub
+
+#End Region
 #Region "RSS"
     Dim RSSURL As String = "http://www.repeatserver.com/Users/JJ12880/news.xml"
     Private Sub ReadAllRSS()
@@ -310,7 +377,21 @@ Public Class Form1
     Private Function ReadLatestRSS()
         Dim RSSMSG As New RSSMessage
         Dim wr As WebRequest = System.Net.WebRequest.Create(RSSURL)
-        Dim resp As WebResponse = wr.GetResponse()
+        Dim resp As WebResponse
+
+        Dim task1 As New Task(Sub()
+                                  resp = wr.GetResponse
+                              End Sub)
+
+        task1.Start()
+
+        Do Until task1.Status = TaskStatus.RanToCompletion
+            Application.DoEvents()
+        Loop
+
+
+
+
 
         Dim rssStream As Stream = resp.GetResponseStream()
         Dim rssDoc As New XmlDocument()
@@ -374,10 +455,28 @@ Public Class Form1
 #End Region
 
 #Region "Notification"
-    Private Sub SendAlert(ByVal neworder As order)
+    Private Sub SendAlert(ByVal neworder As order, ByVal type As String)
 
         Dim Subject As String = "Bittrex Order Filled"
-        Dim message As String = neworder.market & " " & neworder.type.Remove(0, 6) & Environment.NewLine & "Price " & Format(neworder.price, "0.#########") & Environment.NewLine & "Quantity " & neworder.quantity & Environment.NewLine & "Time " & TimeOfDay.TimeOfDay.ToString & Environment.NewLine & "Please Remember To Donate!"
+        Dim message As String
+
+        If type = "part" Then
+            message = neworder.market & " " & neworder.type.Remove(0, 6) & "-Part" & Environment.NewLine & _
+                "Price " & Format(neworder.price, "0.#########") & Environment.NewLine & _
+                "Filled " & neworder.filled & Environment.NewLine & _
+                "Remaining " & neworder.quantity - neworder.filled & Environment.NewLine & _
+                "Time " & TimeOfDay.TimeOfDay.ToString & Environment.NewLine
+        Else
+            message = neworder.market & " " & neworder.type.Remove(0, 6) & Environment.NewLine & _
+                "Price " & Format(neworder.price, "0.#########") & Environment.NewLine & _
+                "Quantity " & neworder.quantity & Environment.NewLine & _
+                "Time " & TimeOfDay.TimeOfDay.ToString & Environment.NewLine & _
+                "Please Remember To Donate!"
+        End If
+
+
+
+
 
         SendIconTrayNotificaiton("CryptoNotify", message)
 
@@ -424,7 +523,7 @@ Public Class Form1
         Dim SmtpServer As New SmtpClient
         Dim mail As New MailMessage
         ' inactive in current version 
-        SmtpServer.Credentials = New Net.NetworkCredential("CryptoNotify", "x")
+        SmtpServer.Credentials = New Net.NetworkCredential("CryptoNotify", " ")
         SmtpServer.Port = 587
         SmtpServer.Host = "smtp.gmail.com"
         SmtpServer.EnableSsl = True
@@ -439,7 +538,7 @@ Public Class Form1
 
 
         'If My.Settings.SendEmail = True Then sendnotification(My.Settings.Email, "CryptoNotify Test Message", message)
-        'If My.Settings.SendSMS Then sendnotification(My.Settings.CellAddress, "CryptoNotify Test Message", message)
+        If My.Settings.SendSMS Then sendnotification(My.Settings.CellAddress, "CryptoNotify Test Message", message)
         If My.Settings.SendSystemTray Then SendIconTrayNotificaiton("CryptoNotify Test Message", message)
         If My.Settings.SendSound Then My.Computer.Audio.Play(My.Resources.sound1, AudioPlayMode.Background)
         If My.Settings.SendPopup Then ShowMessageBox("CryptoNotify Test Message", message)
@@ -633,5 +732,6 @@ Public Class Form1
 #End Region
 
 
-    
+
+
 End Class

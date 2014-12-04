@@ -33,11 +33,13 @@ Partial Class Form1
         Me.NotifyIcon1 = New System.Windows.Forms.NotifyIcon(Me.components)
         Me.BTNSystemTray = New System.Windows.Forms.Button()
         Me.RSSTimer = New System.Windows.Forms.Timer(Me.components)
-        Me.TextBox1 = New System.Windows.Forms.TextBox()
+        Me.TBBTCADDY = New System.Windows.Forms.TextBox()
         Me.LBLStatusColor = New System.Windows.Forms.Label()
         Me.Label4 = New System.Windows.Forms.Label()
         Me.LBLStatus = New System.Windows.Forms.Label()
         Me.TextBox2 = New System.Windows.Forms.TextBox()
+        Me.Label3 = New System.Windows.Forms.Label()
+        Me.TBBYCADDY = New System.Windows.Forms.TextBox()
         Me.SuspendLayout()
         '
         'BTNStart
@@ -120,16 +122,16 @@ Partial Class Form1
         '
         Me.RSSTimer.Interval = 150
         '
-        'TextBox1
+        'TBBTCADDY
         '
-        Me.TextBox1.BorderStyle = System.Windows.Forms.BorderStyle.None
-        Me.TextBox1.Font = New System.Drawing.Font("Microsoft Sans Serif", 12.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.TextBox1.Location = New System.Drawing.Point(62, 169)
-        Me.TextBox1.Name = "TextBox1"
-        Me.TextBox1.ReadOnly = True
-        Me.TextBox1.Size = New System.Drawing.Size(340, 19)
-        Me.TextBox1.TabIndex = 15
-        Me.TextBox1.Text = "13zcYHbYgbLScCE8BWZZ1SZZ6mdmqEbMyz"
+        Me.TBBTCADDY.BorderStyle = System.Windows.Forms.BorderStyle.None
+        Me.TBBTCADDY.Font = New System.Drawing.Font("Microsoft Sans Serif", 12.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.TBBTCADDY.Location = New System.Drawing.Point(62, 169)
+        Me.TBBTCADDY.Name = "TBBTCADDY"
+        Me.TBBTCADDY.ReadOnly = True
+        Me.TBBTCADDY.Size = New System.Drawing.Size(340, 19)
+        Me.TBBTCADDY.TabIndex = 15
+        Me.TBBTCADDY.Text = "13zcYHbYgbLScCE8BWZZ1SZZ6mdmqEbMyz"
         '
         'LBLStatusColor
         '
@@ -173,18 +175,41 @@ Partial Class Form1
         Me.TextBox2.TabIndex = 19
         Me.TextBox2.Text = "CryptoNotify@gmail.com"
         '
+        'Label3
+        '
+        Me.Label3.AutoSize = True
+        Me.Label3.Font = New System.Drawing.Font("Microsoft Sans Serif", 12.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.Label3.Location = New System.Drawing.Point(12, 189)
+        Me.Label3.Name = "Label3"
+        Me.Label3.Size = New System.Drawing.Size(46, 20)
+        Me.Label3.TabIndex = 20
+        Me.Label3.Text = "BYC:"
+        '
+        'TBBYCADDY
+        '
+        Me.TBBYCADDY.BorderStyle = System.Windows.Forms.BorderStyle.None
+        Me.TBBYCADDY.Font = New System.Drawing.Font("Microsoft Sans Serif", 12.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.TBBYCADDY.Location = New System.Drawing.Point(62, 190)
+        Me.TBBYCADDY.Name = "TBBYCADDY"
+        Me.TBBYCADDY.ReadOnly = True
+        Me.TBBYCADDY.Size = New System.Drawing.Size(340, 19)
+        Me.TBBYCADDY.TabIndex = 21
+        Me.TBBYCADDY.Text = "BB6BpKHZ3HS976sZjSAPngNCoct6SQkwxi"
+        '
         'Form1
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.BackColor = System.Drawing.SystemColors.Control
         Me.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch
-        Me.ClientSize = New System.Drawing.Size(421, 200)
+        Me.ClientSize = New System.Drawing.Size(421, 215)
+        Me.Controls.Add(Me.TBBYCADDY)
+        Me.Controls.Add(Me.Label3)
         Me.Controls.Add(Me.TextBox2)
         Me.Controls.Add(Me.LBLStatus)
         Me.Controls.Add(Me.Label4)
         Me.Controls.Add(Me.LBLStatusColor)
-        Me.Controls.Add(Me.TextBox1)
+        Me.Controls.Add(Me.TBBTCADDY)
         Me.Controls.Add(Me.BTNSystemTray)
         Me.Controls.Add(Me.Label2)
         Me.Controls.Add(Me.Label1)
@@ -193,7 +218,7 @@ Partial Class Form1
         Me.Controls.Add(Me.BTNStart)
         Me.Name = "Form1"
         Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen
-        Me.Text = "CryptoNotify v0.9-beta.2.1"
+        Me.Text = "CryptoNotify v0.9-beta.2.2"
         Me.ResumeLayout(False)
         Me.PerformLayout()
 
@@ -208,10 +233,12 @@ Partial Class Form1
     Friend WithEvents NotifyIcon1 As System.Windows.Forms.NotifyIcon
     Friend WithEvents BTNSystemTray As System.Windows.Forms.Button
     Friend WithEvents RSSTimer As System.Windows.Forms.Timer
-    Friend WithEvents TextBox1 As System.Windows.Forms.TextBox
+    Friend WithEvents TBBTCADDY As System.Windows.Forms.TextBox
     Friend WithEvents LBLStatusColor As System.Windows.Forms.Label
     Friend WithEvents Label4 As System.Windows.Forms.Label
     Friend WithEvents LBLStatus As System.Windows.Forms.Label
     Friend WithEvents TextBox2 As System.Windows.Forms.TextBox
+    Friend WithEvents Label3 As System.Windows.Forms.Label
+    Friend WithEvents TBBYCADDY As System.Windows.Forms.TextBox
 
 End Class

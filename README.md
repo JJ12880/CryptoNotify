@@ -10,7 +10,8 @@ CryptoNotify is a desktop application that alerts the user to a completed filled
 ###LATEST VERSION###
 
 
-The current version is v0.9-beta.2
+The current version is v0.9-beta.2.2
+
 Binaries can be found here https://github.com/JJ12880/CryptoNotify/releases
 Sources can be found here  https://github.com/JJ12880/CryptoNotify
 
@@ -41,26 +42,23 @@ in any fashion. Without a working set of API keys, CryptoNotify will not functio
 
 Fully configurable notification options allow you to be alerted via:
 
+
 + Popup window on the desktop
 + System tray message
 + Sound alert
-+ Email
-+ Text from Email 
 + Simple user interface with connection status information
 + Minimizes to the system tray so you can set and forget. 
 
+NEW
+
++ Alerts will now be generated for partial trades!
+
+  
 You can select one, two, or all options in any combination that suits your needs. 
-
-NOTE: Cryptonotify does not generate alerts for partial orders. Support for partial orders will be added in the next version. 
-
-CAUTION:  Email and Email to SMS features are not completely secure, and the developer will theoretically have access
-to your Email address or cellular number. This information is not exposed to other users.
-
 
 ###PLANNED FEATURES###
 
 
-+ Add Support for partial trades
 + Support for sending alerts from user specified email account via POP or SMTP servers. 
 
 
@@ -76,3 +74,23 @@ Or send a message through GitHub
 ###Acknowledgements###
 
 Many Thanks to Ganastor for early beta testing, ideas, and bug hunting
+
+###History###
+
+
+
+#####v0.9-beta.2.2
+
+-Added support for partially completed trades
+
+ -Added ByteCent donation address
+
+-Fixed bug where news window would hang UI
+
+-Re-sized a few message windows.
+
+-reorganized code
+
+#####v0.9-beta.2.1
+
+-First Public release

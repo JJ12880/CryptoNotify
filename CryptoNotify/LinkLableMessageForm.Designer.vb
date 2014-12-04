@@ -31,7 +31,7 @@ Partial Class LinkLableMessageForm
         '
         Me.BTNOK.DialogResult = System.Windows.Forms.DialogResult.Cancel
         Me.BTNOK.Font = New System.Drawing.Font("Microsoft Sans Serif", 12.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.BTNOK.Location = New System.Drawing.Point(92, 153)
+        Me.BTNOK.Location = New System.Drawing.Point(163, 189)
         Me.BTNOK.Name = "BTNOK"
         Me.BTNOK.Size = New System.Drawing.Size(94, 30)
         Me.BTNOK.TabIndex = 3
@@ -43,10 +43,10 @@ Partial Class LinkLableMessageForm
         Me.RTBAlert.BackColor = System.Drawing.SystemColors.Control
         Me.RTBAlert.BorderStyle = System.Windows.Forms.BorderStyle.None
         Me.RTBAlert.Font = New System.Drawing.Font("Microsoft Sans Serif", 12.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.RTBAlert.Location = New System.Drawing.Point(-2, 2)
+        Me.RTBAlert.Location = New System.Drawing.Point(12, 12)
         Me.RTBAlert.Name = "RTBAlert"
         Me.RTBAlert.ReadOnly = True
-        Me.RTBAlert.Size = New System.Drawing.Size(285, 120)
+        Me.RTBAlert.Size = New System.Drawing.Size(404, 139)
         Me.RTBAlert.TabIndex = 2
         Me.RTBAlert.Text = ""
         '
@@ -54,7 +54,7 @@ Partial Class LinkLableMessageForm
         '
         Me.LinkLabel.AutoSize = True
         Me.LinkLabel.Font = New System.Drawing.Font("Microsoft Sans Serif", 12.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.LinkLabel.Location = New System.Drawing.Point(3, 125)
+        Me.LinkLabel.Location = New System.Drawing.Point(8, 165)
         Me.LinkLabel.Name = "LinkLabel"
         Me.LinkLabel.Size = New System.Drawing.Size(0, 20)
         Me.LinkLabel.TabIndex = 4
@@ -63,7 +63,7 @@ Partial Class LinkLableMessageForm
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
-        Me.ClientSize = New System.Drawing.Size(284, 188)
+        Me.ClientSize = New System.Drawing.Size(428, 221)
         Me.ControlBox = False
         Me.Controls.Add(Me.LinkLabel)
         Me.Controls.Add(Me.BTNOK)
