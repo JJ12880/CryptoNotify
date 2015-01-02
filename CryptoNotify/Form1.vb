@@ -19,6 +19,7 @@ Imports System.Security.Principal
 Imports System.Xml
 
 
+
 Structure order
     Dim market As String
     Dim type As String
@@ -49,20 +50,24 @@ Public Class Form1
 
         OutputJsonDll()
         SetIcons()
-        SetAddyBoxes()
+        SetDonationBoxes()
         SetLockoutEmailSMS()
         ShowWelcomeMessage()
-        RSSTimer.Start()
+        ShowLatestRSSNews()
+        ShowUpdateIfNewRSS()
 
     End Sub
+
+
+
 
 
     Private Sub BTNStart_Click(sender As Object, e As EventArgs) Handles BTNStart.Click
         If BTNStart.Text = "Stop" Then
             GetDataTimer.Stop()
             BTNStart.Text = "Start"
-            LBLStatus.Text = "Not Connected"
-            LBLStatusColor.BackColor = Color.Red
+            LBLBittrexStatus.Text = "Not Connected"
+            LBLBittrexStatusColor.BackColor = Color.Red
             firstrun = True
             Exit Sub
         End If
@@ -74,9 +79,9 @@ Public Class Form1
         End If
 
     End Sub
-    Private Sub BTNSettings_Click(sender As Object, e As EventArgs) Handles BTNSettings.Click
+    Private Sub BTNSettings_Click(sender As Object, e As EventArgs) Handles BTNBittrexSettings.Click
         InfoError = False
-
+        BTNStart.Hide()
 
 
         If SettingsDialog.ShowDialog = Windows.Forms.DialogResult.Cancel Then
@@ -85,7 +90,7 @@ Public Class Form1
 
         End If
         BTNStart.Show()
-        BTNTest.Show()
+        'BTNTest.Show()
         BTNSystemTray.Show()
 
 
@@ -98,32 +103,41 @@ Public Class Form1
 
 
 
-        LBLStatusColor.BackColor = Color.Yellow
-        LBLStatus.Text = "Loading Trade Data"
-        LBLStatus.Update()
-        LBLStatusColor.Update()
+        LBLBittrexStatusColor.BackColor = Color.Yellow
+        LBLBittrexStatus.Text = "Loading Trade Data             "
+        LBLBittrexStatus.Update()
+
+        LBLBittrexStatusColor.Update()
 
         If firstrun = True Then
             SendIconTrayNotificaiton("CryptoNotify", "Loading Data")
 
         End If
+        networkerror = False
+        GetBittrexCompleatedOrders()
 
-        GetCompleatedOrders()
-
-        GetPartialOrders()
+        GetBittrexPartialOrders()
 
         If firstrun And Not networkerror Then
             SendIconTrayNotificaiton("CryptoNotify", "Waiting for completed Trades")
-            LBLStatusColor.BackColor = Color.Green
-            LBLStatus.Text = "Connected! API Keys good!"
+            LBLBittrexStatusColor.BackColor = Color.Green
+            LBLBittrexStatus.Text = "Connected! API Keys good!"
+            LBLBittrexStatus.Update()
         End If
+
+        If Not networkerror Then
+            LBLBittrexStatusColor.BackColor = Color.Green
+            LBLBittrexStatus.Text = "Connected: API Keys good!"
+            LBLBittrexStatus.Update()
+        End If
+
 
 
         firstrun = False
         GetDataTimer.Start()
 
     End Sub
-    Private Sub GetCompleatedOrders()
+    Private Sub GetBittrexCompleatedOrders()
         Dim method As String = "getorderhistory"
 
         Dim URI As String = "https://bittrex.com/api/v1.1/account/" & method & "?apikey=" & My.Settings.Pubkey & "&nonce=" & Environment.TickCount
@@ -153,8 +167,8 @@ Public Class Form1
             test = JObject.Parse(client.DownloadString(URI))
         Catch ex As Exception
             SendIconTrayNotificaiton("CryptoNotify", "Connection to Bittrex Timed out! :-(")
-            LBLStatus.Text = "Network Error, no connection to Bittrex!"
-            LBLStatusColor.BackColor = Color.Red
+            LBLBittrexStatus.Text = "Network Error, no connection to Bittrex!"
+            LBLBittrexStatusColor.BackColor = Color.Red
             networkerror = True
             GetDataTimer.Start()
 
@@ -165,21 +179,19 @@ Public Class Form1
 
         If test("success") = "False" Then
             SendIconTrayNotificaiton("ERROR", "CANNOT Connect to Bittrex! API Keys are wrong or non-functional")
-            LBLStatusColor.BackColor = Color.Yellow
-            LBLStatus.Text = "Connected, But API Keys are BAD!"
+            LBLBittrexStatusColor.BackColor = Color.Yellow
+            LBLBittrexStatus.Text = "Connected, But API Keys are BAD!"
             networkerror = True
             GetDataTimer.Start()
 
             Exit Sub
         Else
-            LBLStatusColor.BackColor = Color.Green
-            LBLStatus.Text = "Connected! API Keys good!"
+
         End If
 
 
 
         If test("success") = "True" And firstrun = True Then
-
             SendIconTrayNotificaiton("Connected!", "API Keys good, Listening for completed orders!")
         End If
 
@@ -217,7 +229,15 @@ Public Class Form1
             End If
         Next
     End Sub
-    Private Sub GetPartialOrders()
+
+
+
+
+
+
+
+
+    Private Sub GetBittrexPartialOrders()
         Dim method As String = "getopenorders"
 
         Dim URI As String = "https://bittrex.com/api/v1.1/market/" & method & "?apikey=" & My.Settings.Pubkey & "&nonce=" & Environment.TickCount
@@ -235,6 +255,7 @@ Public Class Form1
         sign = sign.Replace("-", "")
 
         Dim client As New WebClient()
+
         client.Headers.Add("apisign", sign)
 
 
@@ -247,8 +268,8 @@ Public Class Form1
             test = JObject.Parse(client.DownloadString(URI))
         Catch ex As Exception
             SendIconTrayNotificaiton("CryptoNotify", "Connection to Bittrex Timed out! :-(")
-            LBLStatus.Text = "Network Error, no connection to Bittrex!"
-            LBLStatusColor.BackColor = Color.Red
+            LBLBittrexStatus.Text = "Network Error, no connection to Bittrex!"
+            LBLBittrexStatusColor.BackColor = Color.Red
             firstrun = True
             GetDataTimer.Start()
             Exit Sub
@@ -275,17 +296,23 @@ Public Class Form1
                 'there should never be a case where the filled # changes. 
                 If openorders(neworder.ID).filled <> neworder.filled Then
                     'updatelistview()
-                    neworder.type = neworder.type
+
                     SendAlert(neworder, "part")
                     openorders.Remove(neworder.ID)
                     openorders.Add(neworder.ID, neworder)
                 End If
             Else
-                neworder.filled = 0
                 openorders.Add(neworder.ID, neworder)
             End If
         Next
     End Sub
+
+
+
+
+
+
+
 
 
 
@@ -305,28 +332,31 @@ Public Class Form1
         My.Settings.SendEmail = False
         My.Settings.SendSMS = False
     End Sub
-    Private Sub SetAddyBoxes()
+    Private Sub SetDonationBoxes()
         Me.TBBTCADDY.SelectionStart() = 0
         Me.TBBTCADDY.SelectionLength = Me.TBBTCADDY.Text.Length
         Me.TBBTCADDY.ScrollToCaret()
 
-        Me.TBBYCADDY.SelectionStart() = 0
-        Me.TBBYCADDY.SelectionLength = Me.TBBTCADDY.Text.Length
-        Me.TBBYCADDY.ScrollToCaret()
 
     End Sub
     Private Sub OutputJsonDll()
 
         Dim FByte() As Byte = My.Resources.Newtonsoft_Json
-        My.Computer.FileSystem.WriteAllBytes(Directory.GetCurrentDirectory & "/Newtonsoft.Json.dll", FByte, False)
+        Try
+            My.Computer.FileSystem.WriteAllBytes(Directory.GetCurrentDirectory & "/Newtonsoft.Json.dll", FByte, False)
+        Catch ex As Exception
+
+        End Try
+
     End Sub
 
 #End Region
 #Region "RSS"
-    Dim RSSURL As String = "http://www.repeatserver.com/Users/JJ12880/news.xml"
+    Dim RSSNewsURL As String = "http://www.repeatserver.com/Users/JJ12880/news.xml"
+    Dim RSSUpdatesURL As String = "http://www.repeatserver.com/Users/JJ12880/updates.xml"
     Private Sub ReadAllRSS()
 
-        Dim wr As WebRequest = System.Net.WebRequest.Create(RSSURL)
+        Dim wr As WebRequest = System.Net.WebRequest.Create(RSSNewsURL)
         Dim resp As WebResponse = wr.GetResponse()
 
         Dim rssStream As Stream = resp.GetResponseStream()
@@ -374,9 +404,9 @@ Public Class Form1
             'description 
         Next
     End Sub
-    Private Function ReadLatestRSS()
+    Private Function ReadLatestRSS(ByVal url As String)
         Dim RSSMSG As New RSSMessage
-        Dim wr As WebRequest = System.Net.WebRequest.Create(RSSURL)
+        Dim wr As WebRequest = System.Net.WebRequest.Create(url)
         Dim resp As WebResponse
 
         Dim task1 As New Task(Sub()
@@ -436,21 +466,39 @@ Public Class Form1
         Return RSSMSG
 
     End Function
-    Private Sub ShowLatestRSS()
-        Dim msg = ReadLatestRSS()
+    Private Sub ShowLatestRSSNews()
+        Dim msg = ReadLatestRSS(RSSNewsURL)
         If My.Settings.LatestRSS <> msg.subject Then
             My.Settings.LatestRSS = msg.subject
         End If
 
-        ShowLinkLablemMessageBox(msg.subject, msg.message, msg.link)
+        RTBAlert.Text = msg.message
+        LL1.Text = msg.link
+        'ShowLinkLablemMessageBox(msg.subject, msg.message, msg.link)
     End Sub
-    Private Sub ShowLatestRSSIfNew()
-        Dim msg As RSSMessage = ReadLatestRSS()
+    Private Sub ShowLatestRSSNewsIfNew()
+        Dim msg As RSSMessage = ReadLatestRSS(RSSNewsURL)
         If My.Settings.LatestRSS <> msg.subject Then
             My.Settings.LatestRSS = msg.subject
             ShowLinkLablemMessageBox(msg.subject, msg.message, msg.link)
         End If
     End Sub
+
+
+    Private Sub ShowUpdateIfNewRSS()
+        Dim msg As RSSMessage = ReadLatestRSS(RSSUpdatesURL)
+        If "v0.9-beta.3" <> msg.subject Then
+
+
+
+            ShowLinkLablemMessageBox("Update Avalible", msg.message, msg.link)
+        End If
+        If msg.message.Contains("HARDSTOP") And msg.message.Contains("v0.9-beta.3") Then
+            ShowLinkLablemMessageBox("ALERT", "Developer has blacklisted this version of CryptoNotify. Please update to the latest version, and/or refer to announcement page or github for more information", "http://coinblab.com/forums/topic/112/crypto-notify-desktop-notifications-for-bittrex-trades")
+            End
+        End If
+    End Sub
+
 
 #End Region
 
@@ -478,16 +526,16 @@ Public Class Form1
 
 
 
-        SendIconTrayNotificaiton("CryptoNotify", message)
 
 
 
 
-        'If My.Settings.SendEmail = True Then sendnotification(My.Settings.Email, "CryptoNotify Message", message)
-        'If My.Settings.SendSMS Then sendnotification(My.Settings.CellAddress, "CryptoNotify Message", message)
+
+        If My.Settings.SendEmail = True Then sendnotification(My.Settings.Email, "CryptoNotify Message", message)
+        If My.Settings.SendSMS Then sendnotification(My.Settings.CellAddress, "CryptoNotify Message", message)
         If My.Settings.SendSystemTray Then SendIconTrayNotificaiton("CryptoNotify Message", message)
         If My.Settings.SendSound Then My.Computer.Audio.Play(My.Resources.sound1, AudioPlayMode.Background)
-        If My.Settings.SendPopup Then ShowMessageBox("CryptoNotify Message", message)
+        If My.Settings.SendPopup Then ShowLinkLablemMessageBox("CryptoNotify Message", message, "https://bittrex.com/Market/Index?MarketName=" & neworder.market)
 
 
 
@@ -499,12 +547,12 @@ Public Class Form1
 
 
     End Sub
-    Private Sub sendnotification(ByVal address As String, ByVal subject As String, ByVal message As String)
+    Public Sub sendnotification(ByVal address As String, ByVal subject As String, ByVal message As String)
 
         Dim mail As New MailMessage()
 
         mail = New MailMessage()
-        mail.From = New MailAddress("CryptoNotify@gmail.com")
+        mail.From = New MailAddress(My.Settings.OutGoingEmailAddy)
         mail.To.Add(address)
 
 
@@ -523,21 +571,27 @@ Public Class Form1
         Dim SmtpServer As New SmtpClient
         Dim mail As New MailMessage
         ' inactive in current version 
-        SmtpServer.Credentials = New Net.NetworkCredential("CryptoNotify", " ")
-        SmtpServer.Port = 587
-        SmtpServer.Host = "smtp.gmail.com"
+        SmtpServer.Credentials = New Net.NetworkCredential(My.Settings.OutGoingEmailUsername, My.Settings.OutGoingEmailPass)
+        SmtpServer.Port = My.Settings.OutGoingEmailPort
+        SmtpServer.Host = My.Settings.OutGoingEmailServer
         SmtpServer.EnableSsl = True
         mail = e.Argument
-        SmtpServer.Send(mail)
+        Try
+            SmtpServer.Send(mail)
+        Catch ex As Exception
+
+        End Try
+
+
 
     End Sub
-    Private Sub SendTest(sender As Object, e As EventArgs) Handles BTNTest.Click
+    Public Sub SendTest(sender As Object, e As EventArgs)
 
         Dim message As String = "BTC-TEST Sell" & Environment.NewLine & "Price TEST Price" & Environment.NewLine & "Quantity TEST" & Environment.NewLine & "Time " & TimeOfDay.TimeOfDay.ToString & Environment.NewLine & "Dev by JJ12880" & Environment.NewLine & "Please Remember To Donate!"
 
 
 
-        'If My.Settings.SendEmail = True Then sendnotification(My.Settings.Email, "CryptoNotify Test Message", message)
+        If My.Settings.SendEmail = True Then sendnotification(My.Settings.Email, "CryptoNotify Test Message", message)
         If My.Settings.SendSMS Then sendnotification(My.Settings.CellAddress, "CryptoNotify Test Message", message)
         If My.Settings.SendSystemTray Then SendIconTrayNotificaiton("CryptoNotify Test Message", message)
         If My.Settings.SendSound Then My.Computer.Audio.Play(My.Resources.sound1, AudioPlayMode.Background)
@@ -716,20 +770,21 @@ Public Class Form1
     Private Sub Timer2_Tick(sender As Object, e As EventArgs) Handles RSSTimer.Tick
         RSSTimer.Stop()
         If RSSTimer.Interval <> 1800000 Then
-            ShowLatestRSS()
-
+            ShowUpdateIfNewRSS()
+            ShowLatestRSSNews()
             RSSTimer.Interval = 1800000
             RSSTimer.Start()
             Exit Sub
 
         End If
 
-        ShowLatestRSSIfNew()
+        ShowLatestRSSNewsIfNew()
         RSSTimer.Start()
 
     End Sub
 
 #End Region
+
 
 
 

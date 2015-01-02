@@ -10,7 +10,7 @@ CryptoNotify is a desktop application that alerts the user to a completed filled
 ###LATEST VERSION###
 
 
-The current version is v0.9-beta.2.2
+The current version is v0.9-beta 3
 
 Binaries can be found here https://github.com/JJ12880/CryptoNotify/releases
 Sources can be found here  https://github.com/JJ12880/CryptoNotify
@@ -36,8 +36,23 @@ Turn off all options other than "Read Info". CryptoNotify does not send your API
 in any fashion. Without a working set of API keys, CryptoNotify will not function. 
 
 
+###FEATURES NEW IN BETA 3
 
-###FEATURES###
++ New interface and settings layout. 
++ Now able to send alerts by email (requires SMTP configuration)
++ Support for sending alerts from email to SMS
++ Popup window now contains link to bittrex
++ Moved news section to main user interface
++ Ability to set refresh interval. 
++ Improved data validation for settings
++ Bug Fixes
+	+ Fixed bug where alert was generated every time program started if a partially filled order was present
+
+
+
+
+
+###EXISTING FEATURES ###
 
 
 Fully configurable notification options allow you to be alerted via:
@@ -56,10 +71,6 @@ NEW
   
 You can select one, two, or all options in any combination that suits your needs. 
 
-###PLANNED FEATURES###
-
-
-+ Support for sending alerts from user specified email account via POP or SMTP servers. 
 
 
 ###CONTACT###
@@ -78,17 +89,27 @@ Many Thanks to Ganastor for early beta testing, ideas, and bug hunting
 ###History###
 
 
+#####v0.9-beta.3
+
+- Now able to send alerts by email 
+- Support for sending alerts from email to SMS
+- added to Bittrex in pop-up window
+- Moved news section to main user interface
+- Ability to set refresh interval. 
+- Improved data validation for settings
+- Added tabs to settings page
+- Interface redesign
+- Code restructure to make it easier to add future features
+- added alerts for available updates
+- Various Bug Fixes
+- removed BYC donation address
 
 #####v0.9-beta.2.2
 
 -Added support for partially completed trades
-
- -Added ByteCent donation address
-
--Fixed bug where news window would hang UI
-
+-Added ByteCent donation address
+-Fixed bug where news window would hang 
 -Re-sized a few message windows.
-
 -reorganized code
 
 #####v0.9-beta.2.1

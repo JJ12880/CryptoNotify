@@ -197,6 +197,102 @@ Namespace My
                 Me("LatestRSS") = value
             End Set
         End Property
+        
+        <Global.System.Configuration.UserScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("")>  _
+        Public Property OutGoingEmailAddy() As String
+            Get
+                Return CType(Me("OutGoingEmailAddy"),String)
+            End Get
+            Set
+                Me("OutGoingEmailAddy") = value
+            End Set
+        End Property
+        
+        <Global.System.Configuration.UserScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("")>  _
+        Public Property OutGoingEmailUsername() As String
+            Get
+                Return CType(Me("OutGoingEmailUsername"),String)
+            End Get
+            Set
+                Me("OutGoingEmailUsername") = value
+            End Set
+        End Property
+        
+        <Global.System.Configuration.UserScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("")>  _
+        Public Property OutGoingEmailPass() As String
+            Get
+                Return CType(Me("OutGoingEmailPass"),String)
+            End Get
+            Set
+                Me("OutGoingEmailPass") = value
+            End Set
+        End Property
+        
+        <Global.System.Configuration.UserScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("")>  _
+        Public Property OutGoingEmailServer() As String
+            Get
+                Return CType(Me("OutGoingEmailServer"),String)
+            End Get
+            Set
+                Me("OutGoingEmailServer") = value
+            End Set
+        End Property
+        
+        <Global.System.Configuration.UserScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("587")>  _
+        Public Property OutGoingEmailPort() As String
+            Get
+                Return CType(Me("OutGoingEmailPort"),String)
+            End Get
+            Set
+                Me("OutGoingEmailPort") = value
+            End Set
+        End Property
+        
+        <Global.System.Configuration.UserScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("False")>  _
+        Public Property UseOutgoinEmail() As Boolean
+            Get
+                Return CType(Me("UseOutgoinEmail"),Boolean)
+            End Get
+            Set
+                Me("UseOutgoinEmail") = value
+            End Set
+        End Property
+        
+        <Global.System.Configuration.UserScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("10")>  _
+        Public Property RefreshInterval() As String
+            Get
+                Return CType(Me("RefreshInterval"),String)
+            End Get
+            Set
+                Me("RefreshInterval") = value
+            End Set
+        End Property
+        
+        <Global.System.Configuration.UserScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("False")>  _
+        Public Property donated() As Boolean
+            Get
+                Return CType(Me("donated"),Boolean)
+            End Get
+            Set
+                Me("donated") = value
+            End Set
+        End Property
     End Class
 End Namespace
 
