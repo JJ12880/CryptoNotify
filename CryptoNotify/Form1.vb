@@ -487,7 +487,7 @@ Public Class Form1
 
     Private Sub ShowUpdateIfNewRSS()
         Dim msg As RSSMessage = ReadLatestRSS(RSSUpdatesURL)
-        If "v0.9-beta.3" <> msg.subject Then
+        If "v0.9-beta.3.1" <> msg.subject Then
 
 
 
