@@ -595,7 +595,7 @@ Public Class Form1
         If My.Settings.SendSMS Then sendnotification(My.Settings.CellAddress, "CryptoNotify Test Message", message)
         If My.Settings.SendSystemTray Then SendIconTrayNotificaiton("CryptoNotify Test Message", message)
         If My.Settings.SendSound Then My.Computer.Audio.Play(My.Resources.sound1, AudioPlayMode.Background)
-        If My.Settings.SendPopup Then ShowMessageBox("CryptoNotify Test Message", message)
+        If My.Settings.SendPopup Then ShowLinkLablemMessageBox("CryptoNotify Test Message", message, "https://bittrex.com/Market/Index?MarketName=")
 
 
 
@@ -755,8 +755,8 @@ Public Class Form1
         msg.RTBAlert.Text = message
         msg.Text = subject
         msg.LinkLabel.Text = link
-        DialogResult = msg.ShowDialog()
-        Return DialogResult
+        msg.Show()
+
 
     End Function
 #End Region

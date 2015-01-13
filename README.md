@@ -63,10 +63,7 @@ Fully configurable notification options allow you to be alerted via:
 + Sound alert
 + Simple user interface with connection status information
 + Minimizes to the system tray so you can set and forget. 
-
-NEW
-
-+ Alerts will now be generated for partial trades!
++ Alerts generated for partial trades.
 
   
 You can select one, two, or all options in any combination that suits your needs. 

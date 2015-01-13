@@ -233,7 +233,7 @@ Partial Class Form1
         Me.Controls.Add(Me.BTNStart)
         Me.Name = "Form1"
         Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen
-        Me.Text = "CryptoNotify v0.9-beta.2.2"
+        Me.Text = "CryptoNotify v0.9-beta.3"
         Me.GroupBox1.ResumeLayout(False)
         Me.GroupBox1.PerformLayout()
         Me.ResumeLayout(False)
